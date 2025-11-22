@@ -1,0 +1,254 @@
+{
+  "address": "J3zRkAgCWjpXnKUr6teTdS2nLTGA3ZhEUi6gBvi5ZhdY",
+  "metadata": {
+    "name": "rayguard_program",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "add_log",
+      "discriminator": [
+        115,
+        5,
+        126,
+        233,
+        59,
+        60,
+        196,
+        93
+      ],
+      "accounts": [
+        {
+          "name": "ledger",
+          "writable": true
+        },
+        {
+          "name": "log",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  111,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "ledger"
+              },
+              {
+                "kind": "account",
+                "path": "ledger.count",
+                "account": "Ledger"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "ledger"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "AddLogArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "create_ledger",
+      "discriminator": [
+        90,
+        40,
+        32,
+        71,
+        55,
+        108,
+        24,
+        216
+      ],
+      "accounts": [
+        {
+          "name": "ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "seed"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "seed",
+          "type": "u16"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Ledger",
+      "discriminator": [
+        43,
+        41,
+        21,
+        213,
+        180,
+        176,
+        95,
+        32
+      ]
+    },
+    {
+      "name": "Log",
+      "discriminator": [
+        237,
+        13,
+        143,
+        41,
+        50,
+        68,
+        106,
+        125
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "AddLogArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ip_address",
+            "type": "string"
+          },
+          {
+            "name": "threat_type",
+            "type": "string"
+          },
+          {
+            "name": "action_taken",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Ledger",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "last_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "count",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Log",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "ip_address",
+            "type": "string"
+          },
+          {
+            "name": "threat_type",
+            "type": "string"
+          },
+          {
+            "name": "action_taken",
+            "type": "string"
+          },
+          {
+            "name": "previous_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "current_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}
