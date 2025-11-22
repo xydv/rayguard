@@ -1,0 +1,16 @@
+################################################################
+# Manage capstone deployment through Crypto Infrastructure as Code
+################################################################
+
+addon "svm" {
+    rpc_api_url = input.rpc_api_url
+    network_id = input.network_id
+}
+
+action "deploy_rayguard-program" "svm::deploy_program" {
+    description = "Deploy rayguard program"
+    program = svm::get_program_from_anchor_project("rayguard_program")
+    authority = signer.authority
+    payer = signer.payer
+    instant_surfnet_deployment = true
+}

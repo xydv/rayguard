@@ -106,7 +106,7 @@ async def create_ledger_async():
     return str(ledger_pda)
 
 async def log_async(ledger_str, ip, threat, action):
-    client = AsyncClient("https://api.devnet.solana.com")
+    client = AsyncClient("http://127.0.0.1:8899")
     payer = Keypair()
     try:
         await client.request_airdrop(payer.pubkey(), 1_000_000_000)

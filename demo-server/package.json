@@ -13,6 +13,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
     "@hono/zod-validator": "^0.7.5",
     "hono": "^4.10.6",
     "httpsms": "^0.0.4",
