@@ -22,7 +22,7 @@ const provider = new AnchorProvider(
   new NodeWallet(
     Keypair.fromSecretKey(
       // signer publickey
-      Uint8Array.from([]),
+      Uint8Array.from(),
     ),
   ),
   {
@@ -85,14 +85,25 @@ app.post(
   },
 );
 
-app.post("/createLedger", async (c) => {
-  await program.methods
-    .createLedger(new BN(1))
-    .accounts({ authority: provider.publicKey })
-    .rpc();
+app.post(
+  "/createLedger",
+  zValidator(
+    "json",
+    z.object({
+      seed: z.string(),
+    }),
+  ),
+  async (c) => {
+    const { seed } = c.req.valid("json");
 
-  return c.json({ message: "ok" });
-});
+    await program.methods
+      .createLedger(new BN(seed))
+      .accounts({ authority: provider.publicKey })
+      .rpc();
+
+    return c.json({ message: "ok" });
+  },
+);
 
 app.post(
   "/addLog",
@@ -104,7 +115,6 @@ app.post(
   ),
   async (c) => {
     const { ledger } = c.req.valid("json");
-    console.log(ledger);
 
     await program.methods
       .addLog({
