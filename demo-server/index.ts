@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import z from "zod";
 import HttpSms from "httpsms";
+import { createChannel, createResponse } from "better-sse";
 
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { AnchorProvider, BN, Program } from "@coral-xyz/anchor";
@@ -10,6 +11,7 @@ import { type RayguardProgram } from "../rayguard-program/target/types/rayguard_
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 
 const app = new Hono();
+const channel = createChannel();
 const bannedUsers = new Set<string>();
 const client = new HttpSms(
   "uk_Gcjk5xwgLoEHOxbVdvRkImBfs4ciets_Vyz7fw5iDsMT2OOfMF_0ieIETgDnWXSQ",
@@ -21,7 +23,6 @@ const provider = new AnchorProvider(
   connection,
   new NodeWallet(
     Keypair.fromSecretKey(
-      // signer publickey
       Uint8Array.from([
         100, 48, 60, 71, 86, 179, 14, 216, 64, 203, 186, 94, 205, 107, 73, 21,
         42, 136, 132, 201, 221, 76, 247, 175, 232, 102, 85, 60, 114, 27, 96,
@@ -34,58 +35,6 @@ const provider = new AnchorProvider(
 );
 
 const program = new Program<RayguardProgram>(IDL as RayguardProgram, provider);
-
-// DOS
-app.use("*", async (c, next) => {
-  const userId = c.req.header("ip") || "anonymous";
-
-  if (bannedUsers.has(userId)) {
-    return c.json(
-      { message: "your account has been suspended due to malicious activity." },
-      403,
-    );
-  }
-
-  await next();
-});
-
-// attacker will ddos here
-app.get("/resource", async (c) => {
-  return c.json({ message: "ok" }, 200);
-});
-
-app.post(
-  "/agent",
-  zValidator(
-    "json",
-    z.object({
-      type: z.string(),
-      data: z.string().optional(),
-    }),
-  ),
-  async (c) => {
-    const { type, data } = c.req.valid("json");
-
-    switch (type) {
-      case "U2R":
-        return c.json({ message: "PROCESS TERMINATED" }, 403);
-      case "R2L":
-        return c.json({ message: "UNAUTHORIZED" }, 401);
-      case "DOS":
-        if (!data) return c.json({ message: "USER NOT FOUND" }, 503);
-        bannedUsers.add(data);
-        return c.json({ message: "SERVICE UNAVAILABLE" }, 503);
-      case "PROBE":
-        await client.messages.postSend({
-          from: `+91${process.env.FROM}`,
-          to: `+91${process.env.TO}`,
-          encrypted: false,
-          content: `NOTIFICATION: ${data} IS TRYING TO PROBE YOUR SYSTEM!!! ALERT ALERT!!!`,
-        });
-        return c.json({ message: "NOTIFIED" }, 406);
-    }
-  },
-);
 
 app.post(
   "/createLedger",
@@ -123,7 +72,11 @@ app.post(
     }),
   ),
   async (c) => {
-    const { ledger, actionTaken, ipAddress, threatType } = c.req.valid("json");
+    const d = c.req.valid("json");
+
+    channel.broadcast(d, "message");
+
+    const { ledger, actionTaken, ipAddress, threatType } = d;
 
     await program.methods
       .addLog({
@@ -140,6 +93,65 @@ app.post(
 
     return c.json({});
   },
+);
+
+app.post(
+  "/verify",
+  zValidator(
+    "json",
+    z.object({
+      ledger: z.string(),
+      ipAddress: z.string(),
+      threatType: z.string(),
+      actionTaken: z.string(),
+    }),
+  ),
+  async (c) => {
+    const { ledger, ipAddress, threatType, actionTaken } = c.req.valid("json");
+
+    try {
+      const ledgerPubkey = new PublicKey(ledger);
+
+      const logs = await program.account.log.all();
+
+      const isVerified = logs.some(
+        (log) =>
+          log.account.ipAddress === ipAddress &&
+          log.account.threatType === threatType &&
+          log.account.actionTaken === actionTaken,
+      );
+
+      if (isVerified) {
+        return c.json({
+          success: true,
+          message: "Log verified on-chain",
+          verified: true,
+        });
+      } else {
+        return c.json({
+          success: true,
+          message: "Log not found in ledger",
+          verified: false,
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      return c.json(
+        {
+          success: false,
+          message: "Failed to verify log or invalid ledger",
+          error: String(e),
+        },
+        500,
+      );
+    }
+  },
+);
+
+app.get("/sse", (c) =>
+  createResponse(c.req.raw, (session) => {
+    channel.register(session);
+  }),
 );
 
 export default app;

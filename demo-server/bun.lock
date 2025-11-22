@@ -6,6 +6,7 @@
       "dependencies": {
         "@coral-xyz/anchor": "^0.32.1",
         "@hono/zod-validator": "^0.7.5",
+        "better-sse": "^0.15.1",
         "hono": "^4.10.6",
         "httpsms": "^0.0.4",
         "zod": "^4.1.12",
@@ -64,6 +65,8 @@
     "base-x": ["base-x@3.0.11", "", { "dependencies": { "safe-buffer": "^5.0.1" } }, "sha512-xz7wQ8xDhdyP7tQxwdteLYeFfS68tSMNCZ/Y37WJ4bhGfKPpqEIlmIyueQHqOyoPhE6xNUqjzRr8ra0eF9VRvA=="],
 
     "base64-js": ["base64-js@1.5.1", "", {}, "sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA=="],
+
+    "better-sse": ["better-sse@0.15.1", "", {}, "sha512-E8YmmIs7P2T5nHM8VG5Pmtp8CgDsIhT+6CYhg+8Gmke5kJb11ohN1jtEXn/2taSr7WkcU3yNTgoqNYvZ/GQ4sw=="],
 
     "bn.js": ["bn.js@5.2.2", "", {}, "sha512-v2YAxEmKaBLahNwE1mjp4WON6huMNeuDvagFZW+ASCuA/ku0bXR9hSMw0XpiqMoA3+rmnyck/tPRSFQkoC9Cuw=="],
 

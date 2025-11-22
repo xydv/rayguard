@@ -15,6 +15,7 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
     "@hono/zod-validator": "^0.7.5",
+    "better-sse": "^0.15.1",
     "hono": "^4.10.6",
     "httpsms": "^0.0.4",
     "zod": "^4.1.12"
