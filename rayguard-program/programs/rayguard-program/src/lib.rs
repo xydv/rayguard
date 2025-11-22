@@ -61,7 +61,10 @@ pub struct AddLogArgs {
 
 #[derive(Accounts)]
 pub struct AddLog<'info> {
-    #[account(mut)]
+    #[account(
+        mut,
+        has_one = authority, // authority can directly add logs to ledger
+    )]
     pub ledger: Account<'info, Ledger>,
 
     #[account(
@@ -89,6 +92,15 @@ impl<'info> AddLog<'info> {
         let data_string = format!(
             "{}{}{}{}",
             args.ip_address, args.threat_type, args.action_taken, timestamp
+        );
+
+        msg!(
+            "added {} {} {} {} to ledger {}",
+            args.ip_address,
+            args.threat_type,
+            args.action_taken,
+            timestamp,
+            self.ledger.key().to_string()
         );
 
         let current_hash = hash(data_string.as_bytes()).to_bytes();
