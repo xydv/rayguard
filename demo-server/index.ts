@@ -22,15 +22,17 @@ const provider = new AnchorProvider(
   new NodeWallet(
     Keypair.fromSecretKey(
       // signer publickey
-      Uint8Array.from(),
+      Uint8Array.from([
+        100, 48, 60, 71, 86, 179, 14, 216, 64, 203, 186, 94, 205, 107, 73, 21,
+        42, 136, 132, 201, 221, 76, 247, 175, 232, 102, 85, 60, 114, 27, 96,
+        243, 138, 80, 193, 221, 63, 123, 195, 74, 131, 100, 205, 136, 241, 46,
+        231, 250, 96, 245, 22, 151, 138, 74, 123, 28, 60, 111, 163, 102, 228,
+        101, 93, 191,
+      ]),
     ),
   ),
-  {
-    skipPreflight: true,
-    commitment: "processed",
-    preflightCommitment: "processed",
-  },
 );
+
 const program = new Program<RayguardProgram>(IDL as RayguardProgram, provider);
 
 // DOS
@@ -99,7 +101,11 @@ app.post(
     await program.methods
       .createLedger(new BN(seed))
       .accounts({ authority: provider.publicKey })
-      .rpc();
+      .rpc({
+        skipPreflight: true,
+        preflightCommitment: "processed",
+        commitment: "processed",
+      });
 
     return c.json({ message: "ok" });
   },
@@ -111,19 +117,26 @@ app.post(
     "json",
     z.object({
       ledger: z.string(),
+      ipAddress: z.string(),
+      threatType: z.string(),
+      actionTaken: z.string(),
     }),
   ),
   async (c) => {
-    const { ledger } = c.req.valid("json");
+    const { ledger, actionTaken, ipAddress, threatType } = c.req.valid("json");
 
     await program.methods
       .addLog({
-        ipAddress: "1.1.1.1",
-        threatType: "DOS",
-        actionTaken: "BLOCK_IP",
+        ipAddress,
+        threatType,
+        actionTaken,
       })
       .accounts({ ledger: new PublicKey(ledger) })
-      .rpc();
+      .rpc({
+        skipPreflight: true,
+        preflightCommitment: "processed",
+        commitment: "processed",
+      });
 
     return c.json({});
   },
